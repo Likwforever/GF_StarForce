@@ -16,9 +16,17 @@
 *.userprefs
 *.pidb
 *.svd
+*.vscode
 
 /Assets/StreamingAssets/*
 !/Assets/StreamingAssets/.gitkeep
 /ProjectSettings/ProjectVersion.txt
 /Packages/*
 /UnityPackageManager/*
+
+# Unity项目不必要提交的过滤文件
+Libray/
+Logs/
+Packages/
+Temp/
+UserSettings/
