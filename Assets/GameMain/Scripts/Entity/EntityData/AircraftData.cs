@@ -9,6 +9,7 @@ using GameFramework.DataTable;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityGameFramework.Runtime;
 
 namespace StarForce
 {
@@ -94,6 +95,22 @@ namespace StarForce
             get
             {
                 return m_ThrusterData.Speed;
+            }
+            set
+            {
+                m_ThrusterData.Speed = value;
+            }
+        }
+
+        /// <summary>
+        /// 基础速度。
+        /// </summary>
+        public float BaseSpeed
+        {
+            get
+            {
+                return m_ThrusterData.BaseSpeed;
+
             }
         }
 

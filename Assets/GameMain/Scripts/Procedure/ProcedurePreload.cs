@@ -19,6 +19,7 @@ namespace StarForce
     {
         public static readonly string[] DataTableNames = new string[]
         {
+            "Buff",
             "Aircraft",
             "Armor",
             "Asteroid",

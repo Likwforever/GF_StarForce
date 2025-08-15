@@ -5,6 +5,8 @@
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
 
+using System;
+using GameFramework;
 using UnityEngine;
 using UnityGameFramework.Runtime;
 
@@ -14,9 +16,10 @@ namespace StarForce
     {
         [SerializeField]
         private MyAircraftData m_MyAircraftData = null;
-
         private Rect m_PlayerMoveBoundary = default(Rect);
         private Vector3 m_TargetPosition = Vector3.zero;
+        private LogicComponentMgr _logicComponentMgr = null;
+        private BuffLogicComponent _buff = null;
 
 #if UNITY_2017_3_OR_NEWER
         protected override void OnInit(object userData)
@@ -25,6 +28,11 @@ namespace StarForce
 #endif
         {
             base.OnInit(userData);
+
+            this._logicComponentMgr = ReferencePool.Acquire<LogicComponentMgr>();
+            this._logicComponentMgr.Init(this);
+            this._buff = this._logicComponentMgr.AddComponent<BuffLogicComponent>();
+            this._logicComponentMgr.StartAllComponents();
         }
 
 #if UNITY_2017_3_OR_NEWER
@@ -61,6 +69,8 @@ namespace StarForce
         {
             base.OnUpdate(elapseSeconds, realElapseSeconds);
 
+            this._logicComponentMgr.Update(elapseSeconds, realElapseSeconds);
+
             if (Input.GetMouseButton(0))
             {
                 Vector3 point = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -85,6 +95,33 @@ namespace StarForce
                 0f,
                 Mathf.Clamp(CachedTransform.localPosition.z + speed.z, m_PlayerMoveBoundary.yMin, m_PlayerMoveBoundary.yMax)
             );
+        }
+
+        public void ApplyItemEffect(ItemType itemType, int duration)
+        {
+            switch (itemType)
+            {
+                case ItemType.AddSpeed:
+                    Log.Info("应用道具效果: {0}", itemType);
+
+                    DRBuff drBuff = GameEntry.DataTable.GetDataTable<DRBuff>().GetDataRow(1);
+                    if (drBuff == null)
+                    {
+                        Log.Error("Buff data is invalid.");
+                        return;
+                    }
+
+                    Log.Info("应用buff: {0}", drBuff.Name);
+                    this._buff.AddBuff(new BuffData()
+                    {
+                        id = drBuff.Id,
+                        value = drBuff.Value,
+                        type = (BuffType)drBuff.Type,
+                        remainingTime = duration,
+                        stack = 1,
+                    });
+                    break;
+            }
         }
     }
 }

@@ -6,6 +6,7 @@
 //------------------------------------------------------------
 
 using GameFramework;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityGameFramework.Runtime;
@@ -15,7 +16,7 @@ namespace StarForce
     /// <summary>
     /// 战机类。
     /// </summary>
-    public abstract class Aircraft : TargetableObject
+    public abstract class Aircraft : TargetableObject, IBuffable
     {
         [SerializeField]
         private AircraftData m_AircraftData = null;
@@ -138,6 +139,53 @@ namespace StarForce
         public override ImpactData GetImpactData()
         {
             return new ImpactData(m_AircraftData.Camp, m_AircraftData.HP, 0, m_AircraftData.Defense);
+        }
+
+        public void OnBuffApplied(BuffData buff)
+        {
+            Log.Info("OnBuffApplied: {0}", buff.type);
+        }
+
+        public void OnBuffRemoved(BuffData buff)
+        {
+            Log.Info("OnBuffRemoved: {0}", buff.type);
+        }
+
+        public void OnBuffStackChanged(BuffData buff, int oldStack, int newStack)
+        {
+            Log.Info("OnBuffStackChanged: {0}", buff.type);
+        }
+
+        public float GetBaseSpeed()
+        {
+            Log.Info("GetBaseSpeed: {0}", this.m_AircraftData.BaseSpeed);
+            return this.m_AircraftData.BaseSpeed;
+        }
+
+        public float GetBaseDamage()
+        {
+            throw new NotImplementedException();
+        }
+
+        public float GetBaseDefense()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetFinalSpeed(float speed)
+        {
+            m_AircraftData.Speed = speed;
+            Log.Info("SetFinalSpeed: {0}", speed);
+        }
+
+        public void SetFinalDamage(float damage)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetFinalDefense(float defense)
+        {
+            throw new NotImplementedException();
         }
     }
 }

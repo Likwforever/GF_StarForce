@@ -17,6 +17,9 @@ namespace StarForce
         [SerializeField]
         private float m_Speed = 0f;
 
+        [SerializeField]
+        private float m_BaseSpeed = 0f;
+
         public ThrusterData(int entityId, int typeId, int ownerId, CampType ownerCamp)
             : base(entityId, typeId, ownerId, ownerCamp)
         {
@@ -27,17 +30,33 @@ namespace StarForce
                 return;
             }
 
-            m_Speed = drThruster.Speed;
+            m_BaseSpeed = drThruster.Speed;
+            m_Speed = m_BaseSpeed;
         }
 
         /// <summary>
-        /// 速度。
+        /// 当前速度。
         /// </summary>
         public float Speed
         {
             get
             {
                 return m_Speed;
+            }
+            set
+            {
+                m_Speed = value;
+            }
+        }
+
+        /// <summary>
+        /// 基础速度。
+        /// </summary>
+        public float BaseSpeed
+        {
+            get
+            {
+                return m_BaseSpeed;
             }
         }
     }
