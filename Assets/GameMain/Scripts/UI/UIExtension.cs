@@ -167,10 +167,11 @@ namespace StarForce
         private static void OpenNativeDialog(DialogParams dialogParams)
         {
             // TODO：这里应该弹出原生对话框，先简化实现为直接按确认按钮
-            if (dialogParams.OnClickConfirm != null)
-            {
-                dialogParams.OnClickConfirm(dialogParams.UserData);
-            }
+            // if (dialogParams.OnClickConfirm != null)
+            // {
+            //     dialogParams.OnClickConfirm(dialogParams.UserData);
+            // }
+            GameEntry.OpenDialog(dialogParams);
         }
     }
 }

@@ -42,12 +42,14 @@
       <Asset Guid="156d241f796508c4da4fc354a7fbf5a8" ResourceName="UI/UISprites/Common" />
       <Asset Guid="160925a6fe2664f2a978566b819f0af0" ResourceName="Entities" />
       <Asset Guid="185f97f18bd603a478461ce9c08bd039" ResourceName="Materials" />
+      <Asset Guid="1a5130d2c5ea81e42ba2b975e9fcb4df" ResourceName="Entities" />
       <Asset Guid="1b4bad6cea5a94611b21f9757fe41444" ResourceName="Materials" />
       <Asset Guid="1be4472894949437694aead55c6da60f" ResourceName="Sounds" />
       <Asset Guid="1c89236d45255234ebd1d39657ff7e02" ResourceName="Textures" />
       <Asset Guid="1cfe02ffd0b74854ea5bcd1a3c63ac3c" ResourceName="Materials" />
       <Asset Guid="1d46a17a95a444c08830612bc1146d1d" ResourceName="Materials" />
       <Asset Guid="1e0350b97c61bfb4a91c62d756d01727" ResourceName="Materials" />
+      <Asset Guid="1eb5a48c97c82fe4b81f407adb2cb3e4" ResourceName="DataTables" />
       <Asset Guid="236433a27ce40a7429b87d14d8fa3035" ResourceName="UI/UISprites/Common" />
       <Asset Guid="239366f83979ffa48a45dac2f0f1e8cb" ResourceName="DataTables" />
       <Asset Guid="24ca310f92a6796408f1db7647ec4e55" ResourceName="UI/UISprites/Common" />
@@ -126,6 +128,7 @@
       <Asset Guid="b031b4f2980561542a7f7ba41391edc3" ResourceName="Scenes" />
       <Asset Guid="b0c7cf51d3fecb446ab93bf854419715" ResourceName="Materials" />
       <Asset Guid="b2cebe04343227945bab3729ca9a3493" ResourceName="DataTables" />
+      <Asset Guid="b7615f2bf540861439b7d0d561cc0658" ResourceName="DataTables" />
       <Asset Guid="ba157ba55f72c424a9e88f3c029997c4" ResourceName="Textures" />
       <Asset Guid="baedbbad82997f445a8cb4da210404e0" ResourceName="Meshes" />
       <Asset Guid="bbfd75fe6fe00e1448fe988173ede7f9" ResourceName="UI/UIForms" />
