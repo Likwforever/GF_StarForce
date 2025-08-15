@@ -38,6 +38,7 @@ namespace StarForce
             base.OnInit(procedureOwner);
 
             m_Games.Add(GameMode.Survival, new SurvivalGame());
+            m_Games.Add(GameMode.Tower, new TowerGame());
         }
 
         protected override void OnDestroy(ProcedureOwner procedureOwner)

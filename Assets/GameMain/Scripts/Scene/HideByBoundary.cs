@@ -16,10 +16,16 @@ namespace StarForce
         {
             GameObject go = other.gameObject;
             Entity entity = go.GetComponent<Entity>();
+
             if (entity == null)
             {
                 Log.Warning("Unknown GameObject '{0}', you must use entity only.", go.name);
                 Destroy(go);
+                return;
+            }
+
+            if (entity is Enemy)
+            {
                 return;
             }
 

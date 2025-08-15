@@ -16,5 +16,10 @@ namespace StarForce
         /// 生存模式。
         /// </summary>
         Survival,
+
+        /// <summary>
+        /// 塔防模式。
+        /// </summary>
+        Tower,
     }
 }
