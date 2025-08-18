@@ -26,25 +26,17 @@ namespace StarForce
             private set;
         }
 
-        public static PointComponent Point
+        public static PathPointComponent PathPoint
         {
             get;
             private set;
         }
-
-        public static EnemyComponent Enemy
-        {
-            get;
-            private set;
-        }
-
 
         private static void InitCustomComponents()
         {
             BuiltinData = UnityGameFramework.Runtime.GameEntry.GetComponent<BuiltinDataComponent>();
             HPBar = UnityGameFramework.Runtime.GameEntry.GetComponent<HPBarComponent>();
-            Point = UnityGameFramework.Runtime.GameEntry.GetComponent<PointComponent>();
-            Enemy = UnityGameFramework.Runtime.GameEntry.GetComponent<EnemyComponent>();
+            PathPoint = UnityGameFramework.Runtime.GameEntry.GetComponent<PathPointComponent>();
         }
     }
 }

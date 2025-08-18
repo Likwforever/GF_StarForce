@@ -1,13 +1,10 @@
 using GameFramework;
-using UnityGameFramework.Runtime;
 
 namespace StarForce
 {
     public class LogicComponent : IReference
     {
-        protected EntityLogic _owner = null;
-
-        protected LogicComponentType _componentType;
+        protected object _owner = null;
 
         private bool _enable = true;
 
@@ -31,18 +28,13 @@ namespace StarForce
             }
         }
 
-        public LogicComponentType componentType
-        {
-            get => _componentType;
-        }
-
         public virtual void Clear()
         {
             _owner = null;
         }
 
 
-        public virtual void OnAdd(EntityLogic owner)
+        public virtual void OnAdd(object owner)
         {
             this._owner = owner;
         }

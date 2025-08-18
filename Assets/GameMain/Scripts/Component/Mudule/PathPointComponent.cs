@@ -1,3 +1,10 @@
+﻿//------------------------------------------------------------
+// Game Framework
+// Copyright © 2013-2021 Jiang Yin. All rights reserved.
+// Homepage: https://gameframework.cn/
+// Feedback: mailto:ellan@gameframework.cn
+//------------------------------------------------------------
+
 using System.Collections.Generic;
 using GameFramework.ObjectPool;
 using UnityEngine;
@@ -5,12 +12,8 @@ using UnityGameFramework.Runtime;
 
 namespace StarForce
 {
-    public partial class PointComponent
+    public class PathPointComponent : GameFrameworkComponent
     {
-
-        [SerializeField]
-        private Vector3 m_CenterPosition = Vector3.zero;
-
         [SerializeField]
         private float m_Radius = 10f;
 
@@ -18,13 +21,16 @@ namespace StarForce
         private int m_PointCount = 8;
 
         [SerializeField]
-        private PathPoint m_PathPointTemplate = null;
+        private int m_PathPointPoolCapacity = 16;
 
         [SerializeField]
-        private int m_PathPointPoolCapacity = 16;
-        private IObjectPool<PathPointObject> m_PathPointObjectPool = null;
+        private Vector3 m_CenterPosition = Vector3.zero;
+
+        [SerializeField]
+        private PathPoint m_PathPointTemplate = null;
         private List<PathPoint> m_PathPoints = new List<PathPoint>();
         private List<Vector3> m_PathPositions = new List<Vector3>();
+        private IObjectPool<PathPointObject> m_PathPointObjectPool = null;
 
         public Vector3 CenterPosition
         {
@@ -72,6 +78,11 @@ namespace StarForce
             }
         }
 
+        public void Start()
+        {
+            this.m_PathPointObjectPool = GameEntry.ObjectPool.CreateSingleSpawnObjectPool<PathPointObject>("PathPoint", this.m_PathPointPoolCapacity);
+        }
+
         /// <summary>
         /// 生成圆形路径。
         /// </summary>
@@ -107,8 +118,6 @@ namespace StarForce
 
             // 连接最后一个点和第一个点
             TotalPathLength += Vector3.Distance(m_PathPositions[m_PointCount - 1], m_PathPositions[0]);
-
-            Log.Info("Generated circular path with {0} points, total length: {1}", m_PointCount, TotalPathLength);
         }
 
         /// <summary>
@@ -215,23 +224,6 @@ namespace StarForce
             }
         }
 
-        private void OnDrawGizmos()
-        {
-            // 绘制圆形路径
-            Gizmos.color = Color.green;
-            for (int i = 0; i < m_PathPositions.Count; i++)
-            {
-                Vector3 startPos = m_PathPositions[i];
-                Vector3 endPos = m_PathPositions[(i + 1) % m_PathPositions.Count];
-                Gizmos.DrawLine(startPos, endPos);
-            }
-
-            // 绘制圆心
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(m_CenterPosition, 0.5f);
-        }
-
-
         private void CreatePathPoint(Vector3 position, int pointIndex, float waitTime, float moveSpeed)
         {
             PathPoint pathPoint = null;
@@ -252,6 +244,21 @@ namespace StarForce
             pathPoint.Init(position, pointIndex, waitTime, moveSpeed);
             m_PathPoints.Add(pathPoint);
         }
+
+        public void DrawGizmos()
+        {
+            // 绘制圆形路径
+            Gizmos.color = Color.green;
+            for (int i = 0; i < m_PathPositions.Count; i++)
+            {
+                Vector3 startPos = m_PathPositions[i];
+                Vector3 endPos = m_PathPositions[(i + 1) % m_PathPositions.Count];
+                Gizmos.DrawLine(startPos, endPos);
+            }
+
+            // 绘制圆心
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(m_CenterPosition, 0.5f);
+        }
     }
 }
-

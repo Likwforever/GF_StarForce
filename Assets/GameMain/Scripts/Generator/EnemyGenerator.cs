@@ -1,23 +1,19 @@
-//------------------------------------------------------------
-// Game Framework
-// Copyright © 2013-2021 Jiang Yin. All rights reserved.
-// Homepage: https://gameframework.cn/
-// Feedback: mailto:ellan@gameframework.cn
-//------------------------------------------------------------
-
 using System.Collections.Generic;
 using UnityEngine;
 using UnityGameFramework.Runtime;
 
 namespace StarForce
 {
-    public class EnemyComponent : GameFrameworkComponent
+    public class EnemyGenerator : BaseGenerator
     {
-        [SerializeField]
         private int m_EnemyTypeId = 60000;
         private List<int> m_EnemyIds = new List<int>();
         private int m_EnemyKilledCount = 0;
         private int m_EnemyReachedEndCount = 0;
+
+        private float m_SpawnTimer = 0f;
+        private float m_SpawnInterval = 1f;
+        private int m_MaxEnemyCount = 10;
 
         public int EnemyCount
         {
@@ -43,6 +39,25 @@ namespace StarForce
             }
         }
 
+        public override void Initialize(params object[] args)
+        {
+            base.Initialize(args);
+            this.m_MaxEnemyCount = (int)args[0];
+        }
+
+        public override void Update(float elapseSeconds)
+        {
+            base.Update(elapseSeconds);
+
+            // 生成新怪物
+            this.m_SpawnTimer += elapseSeconds;
+            if (this.m_SpawnTimer >= this.m_SpawnInterval && this.EnemyCount < this.m_MaxEnemyCount)
+            {
+                this.SpawnEnemy();
+                this.m_SpawnTimer = 0f;
+            }
+        }
+
         /// <summary>
         /// 生成怪物。
         /// </summary>
@@ -59,7 +74,7 @@ namespace StarForce
             );
 
             // 设置初始位置为路径起点
-            enemyData.Position = GameEntry.Point.GetPositionByProgress(0f);
+            enemyData.Position = GameEntry.PathPoint.GetPathPointPosition(0);
 
             // 显示怪物实体
             GameEntry.Entity.ShowEnemy(enemyData);
@@ -75,9 +90,9 @@ namespace StarForce
         /// <param name="enemy">怪物实体。</param>
         public void AddEnemy(int enemyId)
         {
-            if (enemyId != 0 && !m_EnemyIds.Contains(enemyId))
+            if (enemyId != 0 && !this.m_EnemyIds.Contains(enemyId))
             {
-                m_EnemyIds.Add(enemyId);
+                this.m_EnemyIds.Add(enemyId);
             }
         }
 
@@ -89,8 +104,8 @@ namespace StarForce
         {
             if (enemy != null)
             {
-                m_EnemyKilledCount++;
-                Log.Info("Enemy {0} died. Total killed: {1}", enemy.Id, m_EnemyKilledCount);
+                this.m_EnemyKilledCount++;
+                Log.Info("Enemy {0} died. Total killed: {1}", enemy.Id, this.m_EnemyKilledCount);
             }
         }
 
@@ -102,8 +117,8 @@ namespace StarForce
         {
             if (enemy != null)
             {
-                m_EnemyReachedEndCount++;
-                Log.Info("Enemy {0} reached end. Total reached: {1}", enemy.Id, m_EnemyReachedEndCount);
+                this.m_EnemyReachedEndCount++;
+                Log.Info("Enemy {0} reached end. Total reached: {1}", enemy.Id, this.m_EnemyReachedEndCount);
             }
         }
 
@@ -112,7 +127,7 @@ namespace StarForce
         /// </summary>
         public void ClearAllEnemies()
         {
-            foreach (var enemyId in m_EnemyIds)
+            foreach (var enemyId in this.m_EnemyIds)
             {
                 if (GameEntry.Entity.HasEntity(enemyId))
                 {
@@ -120,7 +135,7 @@ namespace StarForce
                 }
             }
 
-            m_EnemyIds.Clear();
+            this.m_EnemyIds.Clear();
         }
 
         /// <summary>
@@ -130,6 +145,19 @@ namespace StarForce
         {
             m_EnemyKilledCount = 0;
             m_EnemyReachedEndCount = 0;
+        }
+
+        public void Shutdown()
+        {
+            this.ResetStats();
+            this.ClearAllEnemies();
+        }
+
+
+        public override void Clear()
+        {
+            this.ResetStats();
+            this.ClearAllEnemies();
         }
     }
 }

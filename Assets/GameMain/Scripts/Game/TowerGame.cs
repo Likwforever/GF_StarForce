@@ -5,17 +5,17 @@
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
 
-using UnityEngine;
+using GameFramework;
+using GameFramework.Event;
 using UnityGameFramework.Runtime;
 
 namespace StarForce
 {
     public class TowerGame : GameBase
     {
-
-        private float m_SpawnTimer = 0f;
-        private float m_SpawnInterval = 1f;
         private int m_MaxEnemyCount = 10;
+
+        private GeneratorManager _generatorMgr = null;
 
         public override GameMode GameMode
         {
@@ -29,33 +29,34 @@ namespace StarForce
         {
             base.Initialize();
 
+            GameEntry.Event.Subscribe(EnemyReachEndEvent.EventId, OnEnemyReachEnd);
+
             Log.Info("TowerGame initialized.");
 
-            GameEntry.Point.GenerateCircularPath();
+            // 初始化生成器
+            this._generatorMgr = ReferencePool.Acquire<GeneratorManager>();
+            // 路径生成
+            GameEntry.PathPoint.GenerateCircularPath();
+            // 怪物生成
+            this._generatorMgr.AddGenerator<EnemyGenerator>(this.m_MaxEnemyCount);
         }
 
         public override void Update(float elapseSeconds, float realElapseSeconds)
         {
             base.Update(elapseSeconds, realElapseSeconds);
 
-            // 生成新怪物
-            m_SpawnTimer += Time.deltaTime;
-            if (m_SpawnTimer >= m_SpawnInterval && GameEntry.Enemy.EnemyCount < m_MaxEnemyCount)
-            {
-                GameEntry.Enemy.SpawnEnemy();
-                m_SpawnTimer = 0f;
-            }
+            this._generatorMgr.Update(elapseSeconds);
         }
 
         public override void Shutdown()
         {
             base.Shutdown();
+        }
 
-            // 清理所有怪物
-            if (GameEntry.Enemy != null)
-            {
-                GameEntry.Enemy.ClearAllEnemies();
-            }
+
+        private void OnEnemyReachEnd(object sender, GameEventArgs e)
+        {
+            GameOver = true;
         }
     }
 }

@@ -3,38 +3,16 @@ using UnityGameFramework.Runtime;
 
 namespace StarForce
 {
-    public class ItemGeneratorComponent : GameFrameworkComponent
+    public class ItemGenerator : BaseGenerator
     {
 
         // 生成道具的间隔时间
-        [SerializeField]
         private float _generateInterval = 10f;
 
         // 下次生成道具的时间
         private float _nextGenerateTime = 0f;
 
         private BoxCollider m_PlayerMoveBoundary = null;
-
-        private void Update()
-        {
-
-            if (GameEntry.Procedure.CurrentProcedure is not ProcedureMain)
-            {
-                return;
-            }
-
-            if (this.m_PlayerMoveBoundary == null)
-            {
-                ScrollableBackground sceneBackground = FindObjectOfType<ScrollableBackground>();
-                this.m_PlayerMoveBoundary = sceneBackground.PlayerMoveBoundary;
-            }
-
-            if (Time.time >= this._nextGenerateTime)
-            {
-                GenerateItem();
-                this._nextGenerateTime = Time.time + this._generateInterval;
-            }
-        }
 
         public void GenerateItem()
         {
@@ -56,6 +34,25 @@ namespace StarForce
             {
                 Position = randomPosition,
             });
+        }
+
+        public override void Initialize(params object[] args)
+        {
+            this.m_PlayerMoveBoundary = (BoxCollider)args[0];
+        }
+
+        public override void Update(float elapseSeconds)
+        {
+            if (Time.time >= this._nextGenerateTime)
+            {
+                this.GenerateItem();
+                this._nextGenerateTime = Time.time + this._generateInterval;
+            }
+        }
+
+        public override void Clear()
+        {
+            this.m_PlayerMoveBoundary = null;
         }
     }
 

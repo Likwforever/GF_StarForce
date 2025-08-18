@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using GameFramework;
 using UnityGameFramework.Runtime;
@@ -6,13 +7,13 @@ namespace StarForce
 {
     public class LogicComponentMgr : IReference
     {
-        private Entity _owner = null;
+        private object _owner = null;
         private List<LogicComponent> _components = new List<LogicComponent>();
-        private Dictionary<LogicComponentType, LogicComponent> _componentDict = new Dictionary<LogicComponentType, LogicComponent>();
+        private Dictionary<Type, LogicComponent> _componentDict = new Dictionary<Type, LogicComponent>();
 
         private List<UpdateLogicComponent> _updatableComponents = new List<UpdateLogicComponent>();
 
-        public void Init(Entity owner)
+        public void Init(object owner)
         {
             this._owner = owner;
         }
@@ -34,9 +35,9 @@ namespace StarForce
             }
         }
 
-        public T GetComponent<T>(LogicComponentType componentType) where T : LogicComponent
+        public T GetComponent<T>() where T : LogicComponent
         {
-            if (this._componentDict.TryGetValue(componentType, out LogicComponent component))
+            if (this._componentDict.TryGetValue(typeof(T), out LogicComponent component))
             {
                 return component as T;
             }
@@ -46,7 +47,7 @@ namespace StarForce
         public T AddComponent<T>() where T : LogicComponent, new()
         {
             T component = ReferencePool.Acquire<T>();
-            LogicComponentType type = component.componentType;
+            Type type = component.GetType();
             if (this._componentDict.TryGetValue(type, out LogicComponent oldComponent))
             {
                 Log.Info($"ComponentManager: AddComponent Repeat: {type}");
@@ -61,13 +62,13 @@ namespace StarForce
             return component;
         }
 
-        public void RemoveComponent(LogicComponentType type)
+        public void RemoveComponent<T>() where T : LogicComponent, new()
         {
-            if (this._componentDict.TryGetValue(type, out LogicComponent component))
+            if (this._componentDict.TryGetValue(typeof(T), out LogicComponent component))
             {
                 for (int i = 0; i < this._components.Count; ++i)
                 {
-                    if (this._components[i].componentType == type)
+                    if (this._components[i].GetType() == typeof(T))
                     {
                         this._components.RemoveAt(i);
                         break;
@@ -76,13 +77,13 @@ namespace StarForce
             }
             for (int i = 0; i < this._updatableComponents.Count; ++i)
             {
-                if (this._updatableComponents[i].componentType == type)
+                if (this._updatableComponents[i].GetType() == typeof(T))
                 {
                     this._updatableComponents.RemoveAt(i);
                     break;
                 }
             }
-            this._componentDict.Remove(type);
+            this._componentDict.Remove(typeof(T));
             component.OnRemove();
             component.Clear();
             ReferencePool.Release(component);
