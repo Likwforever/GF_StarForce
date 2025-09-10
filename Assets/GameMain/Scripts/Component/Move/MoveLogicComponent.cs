@@ -5,7 +5,6 @@ namespace StarForce
 {
     public class MoveLogicComponent : UpdateLogicComponent
     {
-        private float m_MoveSpeed = 2.0f;
         private float m_CurrentProgress = 0f;
 
         public override void OnAdd(object owner)
@@ -31,7 +30,7 @@ namespace StarForce
             }
 
             // 更新路径进度
-            m_CurrentProgress += this.m_MoveSpeed * elapseSeconds / pathPoint.TotalPathLength;
+            m_CurrentProgress += (this._owner as Enemy).MoveSpeed * elapseSeconds / pathPoint.TotalPathLength;
 
             // 循环路径
             if (m_CurrentProgress >= 1f)

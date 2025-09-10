@@ -60,6 +60,11 @@ namespace StarForce
             entityComponent.ShowEntity(typeof(Weapon), "Weapon", Constant.AssetPriority.WeaponAsset, data);
         }
 
+        public static void ShowPlantWeapon(this EntityComponent entityComponent, WeaponData data)
+        {
+            entityComponent.ShowEntity(typeof(PlantBullet), "Weapon", Constant.AssetPriority.WeaponAsset, data);
+        }
+
         public static void ShowArmor(this EntityComponent entityComponent, ArmorData data)
         {
             entityComponent.ShowEntity(typeof(Armor), "Armor", Constant.AssetPriority.ArmorAsset, data);
@@ -88,6 +93,11 @@ namespace StarForce
         public static void ShowEnemy(this EntityComponent entityComponent, EnemyData data)
         {
             entityComponent.ShowEntity(typeof(Enemy), "Item", Constant.AssetPriority.EnemyAsset, data);
+        }
+
+        public static void ShowPlant(this EntityComponent entityComponent, PlantData data)
+        {
+            entityComponent.ShowEntity(typeof(Plant), "Item", Constant.AssetPriority.PlantAsset, data);
         }
 
         private static void ShowEntity(this EntityComponent entityComponent, Type logicType, string entityGroup, int priority, EntityData data)

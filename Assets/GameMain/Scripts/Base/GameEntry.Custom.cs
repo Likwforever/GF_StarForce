@@ -32,11 +32,25 @@ namespace StarForce
             private set;
         }
 
+        public static PlantManagerComponent PlantManager
+        {
+            get;
+            private set;
+        }
+
+
+        public static CameraMgr Camera
+        {
+            get;
+            private set;
+        }
         private static void InitCustomComponents()
         {
-            BuiltinData = UnityGameFramework.Runtime.GameEntry.GetComponent<BuiltinDataComponent>();
-            HPBar = UnityGameFramework.Runtime.GameEntry.GetComponent<HPBarComponent>();
-            PathPoint = UnityGameFramework.Runtime.GameEntry.GetComponent<PathPointComponent>();
+            //BuiltinData = UnityGameFramework.Runtime.GameEntry.GetComponent<BuiltinDataComponent>();
+            //HPBar = UnityGameFramework.Runtime.GameEntry.GetComponent<HPBarComponent>();
+            //PathPoint = UnityGameFramework.Runtime.GameEntry.GetComponent<PathPointComponent>();
+            //PlantManager = UnityGameFramework.Runtime.GameEntry.GetComponent<PlantManagerComponent>();
+            Camera = UnityGameFramework.Runtime.GameEntry.GetComponent<CameraMgr>();
         }
     }
 }

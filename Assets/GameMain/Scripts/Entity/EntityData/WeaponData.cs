@@ -29,6 +29,9 @@ namespace StarForce
         [SerializeField]
         private int m_BulletSoundId = 0;
 
+        [SerializeField]
+        private int m_AttachPointIndex = 0;
+
         public WeaponData(int entityId, int typeId, int ownerId, CampType ownerCamp)
             : base(entityId, typeId, ownerId, ownerCamp)
         {
@@ -44,6 +47,7 @@ namespace StarForce
             m_BulletId = drWeapon.BulletId;
             m_BulletSpeed = drWeapon.BulletSpeed;
             m_BulletSoundId = drWeapon.BulletSoundId;
+            m_AttachPointIndex = drWeapon.AttachPointIndex;
         }
 
         /// <summary>
@@ -98,6 +102,17 @@ namespace StarForce
             get
             {
                 return m_BulletSoundId;
+            }
+        }
+
+        /// <summary>
+        /// 武器挂点索引。
+        /// </summary>
+        public int AttachPointIndex
+        {
+            get
+            {
+                return m_AttachPointIndex;
             }
         }
     }

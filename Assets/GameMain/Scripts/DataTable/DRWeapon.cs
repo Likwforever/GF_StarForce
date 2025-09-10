@@ -5,7 +5,7 @@
 // Feedback: mailto:ellan@gameframework.cn
 //------------------------------------------------------------
 // 此文件由工具自动生成，请勿直接修改。
-// 生成时间：2025-08-11 18:00:41.006
+// 生成时间：2025-08-19 11:16:06.332
 //------------------------------------------------------------
 
 using GameFramework;
@@ -81,6 +81,15 @@ namespace StarForce
             private set;
         }
 
+        /// <summary>
+        /// 获取武器挂载索引。
+        /// </summary>
+        public int AttachPointIndex
+        {
+            get;
+            private set;
+        }
+
         public override bool ParseDataRow(string dataRowString, object userData)
         {
             string[] columnStrings = dataRowString.Split(DataTableExtension.DataSplitSeparators);
@@ -98,6 +107,7 @@ namespace StarForce
             BulletId = int.Parse(columnStrings[index++]);
             BulletSpeed = float.Parse(columnStrings[index++]);
             BulletSoundId = int.Parse(columnStrings[index++]);
+            AttachPointIndex = int.Parse(columnStrings[index++]);
 
             GeneratePropertyArray();
             return true;
@@ -115,6 +125,7 @@ namespace StarForce
                     BulletId = binaryReader.Read7BitEncodedInt32();
                     BulletSpeed = binaryReader.ReadSingle();
                     BulletSoundId = binaryReader.Read7BitEncodedInt32();
+                    AttachPointIndex = binaryReader.Read7BitEncodedInt32();
                 }
             }
 

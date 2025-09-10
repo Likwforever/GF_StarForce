@@ -11,7 +11,7 @@ using UnityEngine;
 namespace StarForce
 {
     [Serializable]
-    public class EnemyData : EntityData
+    public class EnemyData : TargetableObjectData
     {
         [SerializeField]
         private float m_Health = 100f;
@@ -28,13 +28,14 @@ namespace StarForce
         [SerializeField]
         private float m_PathProgress = 0f;
 
-        public EnemyData(int entityId, int typeId, float health, float moveSpeed, float damage, int reward)
-            : base(entityId, typeId)
+        public EnemyData(int entityId, int typeId, CampType camp, float health, float moveSpeed, float damage, int reward)
+            : base(entityId, typeId, camp)
         {
             m_Health = health;
             m_MoveSpeed = moveSpeed;
             m_Damage = damage;
             m_Reward = reward;
+            HP = MaxHP;
         }
 
         /// <summary>
@@ -99,5 +100,7 @@ namespace StarForce
                 m_PathProgress = value;
             }
         }
+
+        public override int MaxHP => 100;
     }
 }

@@ -67,8 +67,9 @@ namespace StarForce
             EnemyData enemyData = new EnemyData(
                 GameEntry.Entity.GenerateSerialId(),
                 m_EnemyTypeId,
+                CampType.Enemy,
                 100f,  // 血量
-                20f,    // 移动速度
+                2f,    // 移动速度
                 10f,   // 攻击力
                 10     // 击杀奖励
             );

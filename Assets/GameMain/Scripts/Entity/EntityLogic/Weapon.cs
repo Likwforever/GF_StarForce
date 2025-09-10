@@ -16,12 +16,22 @@ namespace StarForce
     /// </summary>
     public class Weapon : Entity
     {
-        private const string AttachPoint = "Weapon Point";
+        private string[] m_AttachPoints = new string[] { "Weapon_Point1", "Weapon_Point2" };
+
+        private float m_NextAttackTime = 0f;
 
         [SerializeField]
         private WeaponData m_WeaponData = null;
 
-        private float m_NextAttackTime = 0f;
+        public WeaponData WeaponData
+        {
+            get
+            {
+                return m_WeaponData;
+            }
+        }
+
+        public int BulletCount = 0;
 
 #if UNITY_2017_3_OR_NEWER
         protected override void OnInit(object userData)
@@ -47,7 +57,8 @@ namespace StarForce
                 return;
             }
 
-            GameEntry.Entity.AttachEntity(Entity, m_WeaponData.OwnerId, AttachPoint);
+
+            GameEntry.Entity.AttachEntity(Entity, m_WeaponData.OwnerId, this.m_AttachPoints[this.m_WeaponData.AttachPointIndex]);
         }
 
 #if UNITY_2017_3_OR_NEWER
@@ -69,12 +80,9 @@ namespace StarForce
                 return;
             }
 
+            BulletCount++;
             m_NextAttackTime = Time.time + m_WeaponData.AttackInterval;
-            GameEntry.Entity.ShowBullet(new BulletData(GameEntry.Entity.GenerateSerialId(), m_WeaponData.BulletId, m_WeaponData.OwnerId, m_WeaponData.OwnerCamp, m_WeaponData.Attack, m_WeaponData.BulletSpeed)
-            {
-                Position = CachedTransform.position,
-            });
-            GameEntry.Sound.PlaySound(m_WeaponData.BulletSoundId);
+            WeaponDefine.WeaponAttack[m_WeaponData.TypeId](this);
         }
     }
 }

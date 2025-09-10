@@ -169,6 +169,21 @@ namespace StarForce
                 GameEntry.Entity.HideEntity(bullet);
                 return;
             }
+
+            PlantBullet plantWeapon = other as PlantBullet;
+            if (plantWeapon != null)
+            {
+                ImpactData entityImpactData = entity.GetImpactData();
+                ImpactData plantWeaponImpactData = plantWeapon.GetImpactData();
+                if (GetRelation(entityImpactData.Camp, plantWeaponImpactData.Camp) == RelationType.Friendly)
+                {
+                    return;
+                }
+
+                int entityDamageHP = CalcDamageHP(110, entityImpactData.Defense);
+                entity.ApplyDamage(plantWeapon, entityDamageHP);
+                return;
+            }
         }
 
         private static int CalcDamageHP(int attack, int defense)

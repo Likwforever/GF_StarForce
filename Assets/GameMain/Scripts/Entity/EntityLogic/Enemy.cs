@@ -11,7 +11,7 @@ using UnityGameFramework.Runtime;
 
 namespace StarForce
 {
-    public class Enemy : Entity
+    public class Enemy : TargetableObject
     {
         private bool m_IsDead = false;
         private EnemyData m_EnemyData = null;
@@ -31,14 +31,6 @@ namespace StarForce
             get
             {
                 return m_EnemyData != null ? m_EnemyData.MoveSpeed : 1f;
-            }
-        }
-
-        public bool IsDead
-        {
-            get
-            {
-                return m_IsDead;
             }
         }
 
@@ -78,46 +70,17 @@ namespace StarForce
             }
         }
 
-        /// <summary>
-        /// 受到伤害。
-        /// </summary>
-        /// <param name="damage">伤害值。</param>
-        public void TakeDamage(float damage)
-        {
-            if (m_IsDead || m_EnemyData == null)
-            {
-                return;
-            }
-
-            m_EnemyData.Health -= damage;
-
-            if (m_EnemyData.Health <= 0f)
-            {
-                Die();
-            }
-        }
-
-        /// <summary>
-        /// 死亡。
-        /// </summary>
-        private void Die()
-        {
-            if (m_IsDead)
-            {
-                return;
-            }
-
-            m_IsDead = true;
-
-            // 隐藏实体
-            GameEntry.Entity.HideEntity(this);
-        }
 
         private void OnDrawGizmos()
         {
             // 在Scene视图中绘制怪物
             Gizmos.color = m_IsDead ? Color.gray : Color.red;
             Gizmos.DrawWireCube(transform.position, Vector3.one);
+        }
+
+        public override ImpactData GetImpactData()
+        {
+            return new ImpactData(m_EnemyData.Camp, m_EnemyData.HP, 0, 0);
         }
     }
 }

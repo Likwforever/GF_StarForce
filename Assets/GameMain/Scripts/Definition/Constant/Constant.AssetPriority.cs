@@ -34,6 +34,7 @@ namespace StarForce
             public const int EffectAsset = 80;
             public const int ItemAsset = 80;
             public const int EnemyAsset = 70;
+            public const int PlantAsset = 75;
         }
     }
 }
