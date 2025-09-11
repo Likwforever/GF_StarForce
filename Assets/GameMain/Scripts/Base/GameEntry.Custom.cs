@@ -26,10 +26,17 @@ namespace StarForce
             private set;
         }
 
+        public static CameraMgr Camera
+        {
+            get;
+            private set;
+        }
+
         private static void InitCustomComponents()
         {
             BuiltinData = UnityGameFramework.Runtime.GameEntry.GetComponent<BuiltinDataComponent>();
             HPBar = UnityGameFramework.Runtime.GameEntry.GetComponent<HPBarComponent>();
+            Camera = UnityGameFramework.Runtime.GameEntry.GetComponent<CameraMgr>();
         }
     }
 }

@@ -46,16 +46,6 @@ namespace StarForce
             );
 
             Log.Info("生成道具在位置: {0}", randomPosition);
-
-            GameEntry.Entity.ShowItem(new ItemData(
-                GameEntry.Entity.GenerateSerialId(),
-                80000, // 道具实体ID
-                3,
-                ItemType.AddSpeed
-            )
-            {
-                Position = randomPosition,
-            });
         }
     }
 
