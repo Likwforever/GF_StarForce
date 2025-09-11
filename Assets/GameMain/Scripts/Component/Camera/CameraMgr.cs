@@ -31,6 +31,11 @@ public class CameraMgr : GameFrameworkComponent
         get => this._cameraTrans;
     }
 
+    public Camera CameraCom
+    {
+        get => this._cameraCom;
+    }
+
     void Start()
     {
         this._cameraCom = Camera.main;
@@ -125,10 +130,10 @@ public class CameraMgr : GameFrameworkComponent
         if (this._cameraFovParam.needUpdate)
         {
             this._cameraFovParam.LerpStep();
-            this._cameraCom.fieldOfView = this._cameraFovParam.CurValue;
+            this._cameraCom.fieldOfView = this._cameraFovParam.curValue;
         }
 
-        if (this._cameraFovParam.IsDone && this._cameraFovParam.needUpdate)
+        if (this._cameraFovParam.isDone && this._cameraFovParam.needUpdate)
         {
             this._cameraFovParam.needUpdate = false;
         }

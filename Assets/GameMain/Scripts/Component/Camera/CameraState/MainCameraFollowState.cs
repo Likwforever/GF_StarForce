@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class FollowData
 {
@@ -28,8 +30,10 @@ public class MainCameraFollowState : BaseMainCameraState
     private Vector3 _lastFrameFollowCenterPos;
     private float _trackedOffectCorrectedY;
     private Vector3 _trackedOffsetPreset; // 跟踪偏移预设
-    private float _minDist = 1; // 最小距离
-    private float _maxDist = 20; // 最大距离
+    private float _minDist; // 最小距离
+    public float minDist => this._minDist;
+    private float _maxDist; // 最大距离
+    public float maxDist => this._maxDist;
     private Vector3 _followPointPos;
 
     public FollowData _followData;
@@ -65,6 +69,14 @@ public class MainCameraFollowState : BaseMainCameraState
         }
     }
 
+    public Vector3 followDir
+    {
+        get
+        {
+            return this._followTrans.forward;
+        }
+    }
+
     private Vector3 _lookAtPointPos;
     public Vector3 lookAtPointPos
     {
@@ -75,10 +87,16 @@ public class MainCameraFollowState : BaseMainCameraState
     }
 
     private Vector2 _axisVal;
-    private float _targetManualDist = 10;
+    private float _targetManualDist;
 
-    private float _minHorizontalAxisVal = -60;
-    private float _maxHorizontalAxisVal = 60;
+    private float _minHorizontalAxisVal;
+    private float _maxHorizontalAxisVal;
+
+    //Base Follow State Map
+    private Dictionary<CameraFollowStateID, BaseFollowBaseState> _stateMap;
+
+    // 单独更新状态
+    private FollowChangeParamState _changeParamState;
 
     // BaseFollowStates
     private BaseFollowBaseState _curState;
@@ -87,7 +105,7 @@ public class MainCameraFollowState : BaseMainCameraState
 
     // BaseFollowShortStates
     private BaseFollowShortState _curShortState;
-    public FollowManualControlRotate manualRotateState;
+    public FollowManualControlRotateState manualRotateState;
 
     // 碰撞检测
     private Vector3 _hitPos;
@@ -99,7 +117,12 @@ public class MainCameraFollowState : BaseMainCameraState
     private float _dampingXY;
     private float _dampingZ;
 
+    private bool _avatarMoving; // 是否移动
+
+    private bool _manualDistChange; // 是否手动改变距离
+
     private float _followDistLerp = 1;
+
     public float targetManualDist
     {
         get => this._targetManualDist;
@@ -120,12 +143,27 @@ public class MainCameraFollowState : BaseMainCameraState
         this._lastFrameFollowData = new FollowData();
         this._correctedData = new CorrectedData();
 
-        this.manualRotateState = new FollowManualControlRotate(this);
-
+        // 初始化相机参数
+        this._minDist = CameraConfig.MinCamDistance;
+        this._maxDist = CameraConfig.MaxCamDistance;
+        this._minHorizontalAxisVal = CameraConfig.MinHorizontalAxisVal;
+        this._maxHorizontalAxisVal = CameraConfig.MaxHorizontalAxisVal;
+        this._targetManualDist = CameraConfig.NormalCamDistance;
         this._trackedOffsetPreset = new Vector3(0, CameraConfig.TrackedOffsetPresetY, 0);
 
+        // 初始化阻尼参数
         this._dampingXY = CameraConfig.DampingXY;
         this._dampingZ = CameraConfig.DampingZ;
+
+        // 初始化状态
+        // base state
+        this._stateMap = new Dictionary<CameraFollowStateID, BaseFollowBaseState>();
+        this.AddState(new FollowCloseShotState(this));
+        // short state
+        this.manualRotateState = new FollowManualControlRotateState(this);
+        // param state
+        this._changeParamState = new FollowChangeParamState(this);
+
     }
 
 
@@ -166,28 +204,33 @@ public class MainCameraFollowState : BaseMainCameraState
         this._lookAtPointPos = this.followPos;
         this._lookAtPointPos.y += this._trackedOffectCorrectedY;
 
-        // 		//判断跟随目标是否产生位移
-        // 		this._avatarMoving = false;
-        // 		if (Vec3.Distance(this._followPointPos, this._followData.followCenterPos) > 0.01) {
-        //         this._avatarMoving = true;
-        //         this.SetBaseStateValid(CameraFollowStateID.FollowCloseShotState, false);
-        //     } else {
-        //         this.SetBaseStateValid(CameraFollowStateID.FollowCloseShotState, true);
-        //     }
+        //判断跟随目标是否产生位移
+        this._avatarMoving = false;
+        if (Vector3.Distance(this._followPointPos, this._lastFrameFollowCenterPos) > 0.01)
+        {
+            this._avatarMoving = true;
+            //this.SetBaseStateValid(CameraFollowStateID.FollowCloseShotState, false);
+        }
+        else
+        {
+            //this.SetBaseStateValid(CameraFollowStateID.FollowCloseShotState, true);
+        }
 
-        // 		if (this._changeParamState.active) {
-        //         this._changeParamState.Update();
-        //     }
+        if (this._changeParamState.active)
+        {
+            this._changeParamState.Update();
+        }
 
-        // 		if (this._recoveringState.active) {
-        //         this._recoveringState.Update();
-        //     }
+        // if (this._recoveringState.active)
+        // {
+        //     this._recoveringState.Update();
+        // }
 
 
         // 状态更新与切换
         if (this._nextState != null)
         {
-            this._curState.Exit();
+            this._curState?.Exit();
             this._lastState = this._curState;
             this._curState = this._nextState;
             this._curState.Enter();
@@ -230,7 +273,7 @@ public class MainCameraFollowState : BaseMainCameraState
         float rayDist = Vector3.Distance(startPos, endPos);
 
         // 这里假设相机碰撞检测忽略Trigger，使用默认Layer
-        bool hit = Physics.Raycast(startPos, rayDir, out hitInfo, rayDist, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+        bool hit = Physics.Raycast(startPos, rayDir, out hitInfo, rayDist, LayerMask.GetMask("Ground"), QueryTriggerInteraction.Ignore);
 
         // 为什么？这里碰撞后对相机进行了位置修正，还能够检测到碰撞？
         // 因为碰撞检测是基于相机位置进行的，而不是基于修正后的位置，这就是使用correctedData的好处
@@ -278,11 +321,11 @@ public class MainCameraFollowState : BaseMainCameraState
             {
                 this._hitDistance = 0;
             }
-            // if (this._manualDistChange)
-            // {
-            //     this._correctedData.correctedDistLerp = this._followDistLerp;
-            //     this._hitDistance = null;
-            // }
+            if (this._manualDistChange)
+            {
+                this._correctedData.correctedDistLerp = this._followDistLerp;
+                this._hitDistance = 0;
+            }
         }
 
         // 进行距离缓冲
@@ -338,12 +381,7 @@ public class MainCameraFollowState : BaseMainCameraState
         this.cameraPosition = this._correctedData.correctedCameraPos;
         this.cameraForward = this._correctedData.correctedCameraForward;
 
-        // this._manualDistChange = false;
-
-        // endPos.Release();
-        // startPos.Release();
-        // cameraScreenOffset.Release();
-        // 	}
+        this._manualDistChange = false;
     }
 
     private void CollectData()
@@ -440,6 +478,15 @@ public class MainCameraFollowState : BaseMainCameraState
         // }
         this._axisVal.x = Mathf.Clamp(CameraUtil.NormalizeHorizontalAxis(val), this._minHorizontalAxisVal, this._maxHorizontalAxisVal);
     }
+
+    /// <summary>
+    /// 改变跟随距离
+    /// </summary>
+    /// <param name="dist"></param>
+    public void ChangeFollowDistance(float dist)
+    {
+        this._targetManualDist = Mathf.Clamp(dist, this._minDist, this._maxDist);
+    }
     /// <summary>
     /// 设置绕垂直轴旋转的值，即水平方向旋转
     /// </summary>
@@ -466,6 +513,15 @@ public class MainCameraFollowState : BaseMainCameraState
         this.SetHorizontalAxisVal(horizontal);
     }
 
+    /// <summary>
+    /// 设置最小跟随距离
+    /// </summary>
+    /// <param name="minDist"></param>
+    public void SetMinFollowDistance(float minDist)
+    {
+        this._minDist = minDist;
+    }
+
 
     /// <summary>
     /// 设置跟随目标
@@ -485,7 +541,33 @@ public class MainCameraFollowState : BaseMainCameraState
     /// <param name="dist"></param>
     public void ChangeFollowDistanceManually(float dist)
     {
-        this._targetManualDist = Mathf.Clamp(dist, this._minDist, this._maxDist);
+        this._manualDistChange = true;
+        // 判断是缩放
+        float offset = dist - this.targetManualDist;
+
+        this.ChangeFollowDistance(dist);
+
+
+        // 进入近景模式（仅能在没有在进行距离插值时进入，避免参数错误）
+        if (this._targetManualDist <= CameraConfig.EnterCloseShotDist && offset < 0)
+        {
+            this.TransitBaseState(CameraFollowStateID.FollowCloseShotState);
+            // this.SetBaseStateValid(CameraFollowStateID.FollowCloseShotState, false);
+        }
+        if (this._targetManualDist > CameraConfig.EnterCloseShotDist && offset > 0)
+        {
+            // this.SetBaseStateValid(CameraFollowStateID.FollowCloseShotState, true);
+        }
+        //退出近景模式
+        if (
+            this._curState != null &&
+            this._curState.ID == CameraFollowStateID.FollowCloseShotState &&
+            offset > 0 &&
+            this._targetManualDist > CameraConfig.ExitCloseShotDist
+        )
+        {
+            this.TryToTransitToOtherBaseState();
+        }
     }
 
     /// <summary>
@@ -505,16 +587,169 @@ public class MainCameraFollowState : BaseMainCameraState
     /// <param name="shortState"></param>
     public void AddOrReplaceShortState(BaseFollowShortState shortState)
     {
-        if (this._curShortState != null)
+        if (this._curShortState != null && this._curShortState.ID != shortState.ID)
         {
             this._curShortState.Exit();
             this._curShortState = shortState;
             this._curShortState.Enter();
         }
-        else
+        if (this._curShortState == null)
         {
             this._curShortState = shortState;
             this._curShortState.Enter();
         }
     }
+
+
+    private void AddState(BaseFollowBaseState state)
+    {
+        CameraFollowStateID id = state.ID;
+        if (this._stateMap.ContainsKey(id))
+        {
+            Debug.LogError("MainCameraFollowState.AddState(): state already exists.");
+            return;
+        }
+        state.SetValid(true);
+        this._stateMap[id] = state;
+    }
+
+
+    /// <summary>
+    /// 切换baseState
+    /// </summary>
+    /// <param name="toStateId"></param>
+    public void TransitBaseState(CameraFollowStateID toStateId)
+    {
+        BaseFollowBaseState toState = this._stateMap[toStateId];
+
+        // 处理有效状态的情况
+        bool flag = true;
+        if (toState != null)
+        {
+            if (this._curState == null)
+            {
+                this._nextState = toState;
+                return;
+            }
+
+            // if (!this.GetBaseStateValid(toStateId))
+            // {
+            //     flag = false;
+            //     console.error("MainCameraFollowState.TransitBaseState(): Invalid state id.", toStateId);
+            // }
+
+            if (this._curState != null && toStateId == this._curState.ID)
+            {
+                flag = false;
+                this._nextState = null;
+            }
+
+            if (flag)
+            {
+                this._nextState = toState;
+                return;
+            }
+        }
+    }
+
+    public void TryToTransitToOtherBaseState()
+    {
+        CameraFollowStateID targetBaseStateId = this.GetTargetBaseStateId();
+
+        if (targetBaseStateId != CameraFollowStateID.None)
+        {
+            this.TransitBaseState(targetBaseStateId);
+        }
+        else
+        {
+            if (this._curState != null)
+            {
+                this._curState.Exit();
+                this._curState = null;
+            }
+        }
+    }
+
+    // 获取基础Base相机，CloseShot相机这类型虽然也为Base相机，但是为特殊Base相机
+    private CameraFollowStateID GetTargetBaseStateId()
+    {
+        return CameraFollowStateID.None;
+    }
+
+    #region Param State
+    /**
+	 * 取消所有参数过渡
+	 */
+    public void CancelAllPramChange()
+    {
+        this._changeParamState.CancelAllParamChange();
+    }
+
+    public void CancelVerticalAxisLerp()
+    {
+        this._changeParamState.CancelVerticalAxisLerp();
+    }
+
+    public void CancelHorizontalAxisLerp()
+    {
+        this._changeParamState.CancelHorizontalAxisLerp();
+    }
+
+    public void CancelDistanceLerp()
+    {
+        this._changeParamState.CancelDistanceLerp();
+    }
+    /// <summary>
+    /// 尝试插值设置垂直轴旋转值
+    /// </summary>
+    /// <param name="targetVerticalAxis"></param>
+    /// <param name="durationRatio"></param>
+    /// <param name="endCallback"></param>
+    /// <param name="lerpMode"></param>
+    /// <param name="isForce"></param>
+    public void TryLerpVerticalAxisVal(float targetVerticalAxis, float durationRatio, UnityAction endCallback, CameraLerpMode lerpMode, bool isForce = false)
+    {
+        targetVerticalAxis = CameraUtil.NormalizeVerticalAxis(targetVerticalAxis);
+
+        if (Math.Abs(targetVerticalAxis - this.verticalAxisVal) > 180)
+        {
+            if (this.verticalAxisVal > targetVerticalAxis)
+            {
+                targetVerticalAxis += 360;
+            }
+            else
+            {
+                targetVerticalAxis -= 360;
+            }
+        }
+
+        this._changeParamState.TryChangeVerticalAxisVal(targetVerticalAxis, durationRatio, endCallback, lerpMode, isForce);
+    }
+
+    /// <summary>
+    /// 尝试插值设置水平轴旋转值
+    /// </summary>
+    /// <param name="targetHorizontalAxis"></param>
+    /// <param name="durationRatio"></param>
+    /// <param name="endCallback"></param>
+    /// <param name="lerpMode"></param>
+    /// <param name="isForce"></param>
+    public void TryLerpHorizontalAxisVal(float targetHorizontalAxis, float durationRatio, UnityAction endCallback, CameraLerpMode lerpMode, bool isForce = false)
+    {
+        this._changeParamState.TryChangeHorizontalAxisVal(targetHorizontalAxis, durationRatio, endCallback, lerpMode, isForce);
+    }
+
+    /// <summary>
+    /// 尝试插值设置距离
+    /// </summary>
+    /// <param name="targetDist"></param>
+    /// <param name="durationRatio"></param>
+    /// <param name="endCallback"></param>
+    /// <param name="lerpMode"></param>
+    public void TryLerpDistance(float targetDist, float durationRatio, UnityAction endCallback, CameraLerpMode lerpMode)
+    {
+        this._changeParamState.TryChangeDistance(targetDist, durationRatio, endCallback, lerpMode);
+    }
+    #endregion
+
 }

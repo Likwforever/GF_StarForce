@@ -8,9 +8,33 @@ public static class CameraUtil
     public static float Epsilon = 0.00001f;
     // 阻尼系数
     public static float KLogNegligibleResidual = -4.605170186f;
+
     public static float Lerp(float start, float end, float t)
     {
+        if (t > 1)
+        {
+            t = 1;
+        }
+        if (t < 0)
+        {
+            t = 0;
+        }
+
         return start + (end - start) * t;
+    }
+
+    // 平方函数
+    public static float SquareLerp(float start, float end, float t)
+    {
+        t = -t * t + 2 * t;
+        return CameraUtil.Lerp(start, end, t);
+    }
+
+    // 立方函数
+    public static float CubeLerp(float start, float end, float t)
+    {
+        t = t * t * t;
+        return CameraUtil.Lerp(start, end, t);
     }
     /**
 	 * @description: 应用阻尼
