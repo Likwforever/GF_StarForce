@@ -18,6 +18,7 @@ public class FollowChangeParamState : BaseFollowBaseState
 
     public override int Priority => 0;
 
+    public override bool cannotBeSkipped => false;
 
     public override void Update()
     {

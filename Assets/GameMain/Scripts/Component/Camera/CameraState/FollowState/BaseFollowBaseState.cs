@@ -5,6 +5,8 @@ public abstract class BaseFollowBaseState : CameraState<MainCameraFollowState>
 
     public abstract int Priority { get; }
 
+    public abstract bool cannotBeSkipped { get; }
+
     protected BaseFollowBaseState(MainCameraFollowState owner) : base(owner)
     {
     }

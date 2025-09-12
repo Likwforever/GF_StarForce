@@ -15,6 +15,8 @@ public class FollowCloseShotState : BaseFollowBaseState
 
     public override int Priority => 1;
 
+    public override bool cannotBeSkipped => true;
+
     public FollowCloseShotState(MainCameraFollowState owner) : base(owner)
     {
     }

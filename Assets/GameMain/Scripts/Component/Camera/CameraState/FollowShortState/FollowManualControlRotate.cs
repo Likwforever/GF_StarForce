@@ -1,8 +1,11 @@
+using StarForce;
 using UnityEngine;
 
 public class FollowManualControlRotateState : BaseFollowShortState
 {
+    private float _exitTime = 0;
     public override CameraFollowShortStateID ID => CameraFollowShortStateID.FollowManualControlRotateState;
+    public override bool isSkippingBaseState => true;
     public FollowManualControlRotateState(MainCameraFollowState owner) : base(owner)
     {
 
@@ -11,18 +14,21 @@ public class FollowManualControlRotateState : BaseFollowShortState
     public override void Enter()
     {
         base.Enter();
-        Debug.Log("FollowManualControlRotate Enter");
+        this._exitTime = Time.time + 2;
     }
 
     public override void Update()
     {
         base.Update();
+        if (Time.time > this._exitTime)
+        {
+            this.End();
+        }
     }
 
     public override void Exit()
     {
         base.Exit();
-        Debug.Log("FollowManualControlRotate Exit");
     }
 
     public void SetDragDelta(float dx, float dy)

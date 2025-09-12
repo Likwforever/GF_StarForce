@@ -236,13 +236,18 @@ public class MainCameraFollowState : BaseMainCameraState
             this._curState.Enter();
             this._nextState = null;
         }
+
         if (this._curShortState != null)
         {
             this._curShortState.Update();
             // 再判断一次shortState是否被移除，因为update中short state会执行exit
             if (this._curShortState != null && this._curState != null)
             {
-                this._curState.Update();
+                // 如果shortState不需要跳过baseState，或者baseState不能被跳过，则更新baseState
+                if (!this._curShortState.isSkippingBaseState || this._curState.cannotBeSkipped)
+                {
+                    this._curState.Update();
+                }
             }
         }
         else if (this._curState != null)
@@ -465,6 +470,18 @@ public class MainCameraFollowState : BaseMainCameraState
         return result;
     }
 
+    private void AddState(BaseFollowBaseState state)
+    {
+        CameraFollowStateID id = state.ID;
+        if (this._stateMap.ContainsKey(id))
+        {
+            Debug.LogError("MainCameraFollowState.AddState(): state already exists.");
+            return;
+        }
+        state.SetValid(true);
+        this._stateMap[id] = state;
+    }
+
     /// <summary>
     /// 设置绕水平轴旋转的值，即垂直方向旋转
     /// </summary>
@@ -600,17 +617,13 @@ public class MainCameraFollowState : BaseMainCameraState
         }
     }
 
-
-    private void AddState(BaseFollowBaseState state)
+    public void TryRemoveShortState()
     {
-        CameraFollowStateID id = state.ID;
-        if (this._stateMap.ContainsKey(id))
+        if (this._curShortState != null)
         {
-            Debug.LogError("MainCameraFollowState.AddState(): state already exists.");
-            return;
+            this._curShortState.Exit();
+            this._curShortState = null;
         }
-        state.SetValid(true);
-        this._stateMap[id] = state;
     }
 
 
