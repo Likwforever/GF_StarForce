@@ -22,9 +22,9 @@ public class CorrectedData
 public class MainCameraFollowState : BaseMainCameraState
 {
 
-    public override CameraStateID ID => CameraStateID.FollowState;
+    public override CameraStateID id => CameraStateID.FollowState;
 
-    public override int Priority => 1;
+    public override int priority => 1;  // 优先级: 在切换状态时，目标状态的优先级小于当前状态的优先级，则无法切换至目标状态
 
     private Vector3 _lastFrameCameraPosition;
     private Vector3 _lastFrameFollowCenterPos;
