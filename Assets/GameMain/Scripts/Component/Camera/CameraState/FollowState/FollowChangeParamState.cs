@@ -114,4 +114,9 @@ public class FollowChangeParamState : BaseFollowBaseState
     {
         this._cameraDist.needUpdate = false;
     }
+
+    public bool IsParamChangeDone()
+    {
+        return this._cameraVerticalAxis.isDone && this._cameraHorizontalAxis.isDone && this._cameraDist.isDone;
+    }
 }

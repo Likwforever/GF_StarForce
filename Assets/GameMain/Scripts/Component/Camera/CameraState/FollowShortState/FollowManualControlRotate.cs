@@ -11,7 +11,7 @@ public class FollowManualControlRotateState : BaseFollowShortState
 
     }
 
-    public override void Enter()
+    public override void Enter(object param = null)
     {
         base.Enter();
         this._exitTime = Time.time + 2;

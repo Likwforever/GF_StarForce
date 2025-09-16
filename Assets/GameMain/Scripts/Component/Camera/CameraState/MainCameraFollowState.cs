@@ -105,6 +105,7 @@ public class MainCameraFollowState : BaseMainCameraState
 
     // BaseFollowShortStates
     private BaseFollowShortState _curShortState;
+    public FollowRangeTransitState rangeTransitState;
     public FollowManualControlRotateState manualRotateState;
 
     // 碰撞检测
@@ -160,6 +161,7 @@ public class MainCameraFollowState : BaseMainCameraState
         this._stateMap = new Dictionary<CameraFollowStateID, BaseFollowBaseState>();
         this.AddState(new FollowCloseShotState(this));
         // short state
+        this.rangeTransitState = new FollowRangeTransitState(this);
         this.manualRotateState = new FollowManualControlRotateState(this);
         // param state
         this._changeParamState = new FollowChangeParamState(this);
@@ -537,6 +539,13 @@ public class MainCameraFollowState : BaseMainCameraState
     public void SetMinFollowDistance(float minDist)
     {
         this._minDist = minDist;
+        if (this._targetManualDist < this._minDist) this._targetManualDist = this._minDist;
+    }
+
+    public void SetMaxFollowDistance(float maxDist)
+    {
+        this._minDist = maxDist;
+        if (this._targetManualDist > this._maxDist) this._targetManualDist = this._maxDist;
     }
 
 
@@ -602,18 +611,22 @@ public class MainCameraFollowState : BaseMainCameraState
     /// 切换ShortState
     /// </summary>
     /// <param name="shortState"></param>
-    public void AddOrReplaceShortState(BaseFollowShortState shortState)
+    public void AddOrReplaceShortState(BaseFollowShortState shortState, bool skipPreviousState = true, object param = null)
     {
-        if (this._curShortState != null && this._curShortState.ID != shortState.ID)
+        if (this._curShortState != null)
         {
-            this._curShortState.Exit();
-            this._curShortState = shortState;
-            this._curShortState.Enter();
+            if (skipPreviousState && this._curShortState.ID != shortState.ID)
+            {
+                this._curShortState.Exit();
+                this._curShortState = shortState;
+                this._curShortState.Enter(param);
+
+            }
         }
         if (this._curShortState == null)
         {
             this._curShortState = shortState;
-            this._curShortState.Enter();
+            this._curShortState.Enter(param);
         }
     }
 
@@ -720,7 +733,7 @@ public class MainCameraFollowState : BaseMainCameraState
     /// <param name="endCallback"></param>
     /// <param name="lerpMode"></param>
     /// <param name="isForce"></param>
-    public void TryLerpVerticalAxisVal(float targetVerticalAxis, float durationRatio, UnityAction endCallback, CameraLerpMode lerpMode, bool isForce = false)
+    public void TryLerpVerticalAxisVal(float targetVerticalAxis, float durationRatio, UnityAction endCallback = null, CameraLerpMode lerpMode = CameraLerpMode.LineLerp, bool isForce = false)
     {
         targetVerticalAxis = CameraUtil.NormalizeVerticalAxis(targetVerticalAxis);
 
@@ -747,7 +760,7 @@ public class MainCameraFollowState : BaseMainCameraState
     /// <param name="endCallback"></param>
     /// <param name="lerpMode"></param>
     /// <param name="isForce"></param>
-    public void TryLerpHorizontalAxisVal(float targetHorizontalAxis, float durationRatio, UnityAction endCallback, CameraLerpMode lerpMode, bool isForce = false)
+    public void TryLerpHorizontalAxisVal(float targetHorizontalAxis, float durationRatio, UnityAction endCallback = null, CameraLerpMode lerpMode = CameraLerpMode.LineLerp, bool isForce = false)
     {
         this._changeParamState.TryChangeHorizontalAxisVal(targetHorizontalAxis, durationRatio, endCallback, lerpMode, isForce);
     }
@@ -759,9 +772,18 @@ public class MainCameraFollowState : BaseMainCameraState
     /// <param name="durationRatio"></param>
     /// <param name="endCallback"></param>
     /// <param name="lerpMode"></param>
-    public void TryLerpDistance(float targetDist, float durationRatio, UnityAction endCallback, CameraLerpMode lerpMode)
+    public void TryLerpDistance(float targetDist, float durationRatio, UnityAction endCallback = null, CameraLerpMode lerpMode = CameraLerpMode.LineLerp)
     {
         this._changeParamState.TryChangeDistance(targetDist, durationRatio, endCallback, lerpMode);
+    }
+
+    /// <summary>
+    /// 是否完成参数过渡
+    /// </summary>
+    /// <returns></returns>
+    public bool IsParamChangeDone()
+    {
+        return this._changeParamState.IsParamChangeDone();
     }
     #endregion
 

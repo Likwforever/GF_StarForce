@@ -167,6 +167,7 @@ public enum CameraFollowShortStateID
 {
     None = 0,
     FollowManualControlRotateState = 1,
+    FollowRangeTransitState = 2,
 }
 
 

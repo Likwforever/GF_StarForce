@@ -21,7 +21,7 @@ public class FollowCloseShotState : BaseFollowBaseState
     {
     }
 
-    public override void Enter()
+    public override void Enter(object param = null)
     {
         base.Enter();
         this.CancelClosingParam();

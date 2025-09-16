@@ -27,7 +27,7 @@ public abstract class CameraState<T>
     }
 
 
-    public virtual void Enter()
+    public virtual void Enter(object param = null)
     {
         this._active = true;
     }

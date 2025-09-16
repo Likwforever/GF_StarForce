@@ -106,6 +106,24 @@ public class CameraMgr : GameFrameworkComponent
                 fadeOut = 0,
             });
         }
+
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            var target = GameObject.Find("Npc");
+            if (target != null)
+            {
+                Vector3 dir = target.transform.position - this._cameraTrans.position;
+                Quaternion quaternion = Quaternion.LookRotation(dir);
+                float targetVerticalAxis = quaternion.eulerAngles.y;
+                this.EnterRangeTransit(new FollowRangeStateParamVo()
+                {
+                    fadeTime = 1,
+                    distance = 5,
+                    verticalAxisVal = targetVerticalAxis,
+                    horizontalAxisVal = this._followState.horizontalAxisVal, // 默认不改变水平轴
+                });
+            }
+        }
     }
 
     void LateUpdate()
@@ -263,6 +281,25 @@ public class CameraMgr : GameFrameworkComponent
         if (this._followState.active && this._followState.manualRotateState.active)
         {
             this._followState.manualRotateState.SetDragDelta(dx * this._manualVerticalRatio, dy * this._manualHorizontalRatio);
+        }
+    }
+
+    // 进入范围转换
+    public void EnterRangeTransit(FollowRangeStateParamVo vo)
+    {
+        if (this._followState.active)
+        {
+            this._followState.AddOrReplaceShortState(this._followState.rangeTransitState, true, vo);
+        }
+    }
+
+    // 退出范围转换
+    public void ExitRangeTransit(FollowRangeStateParamVo vo)
+    {
+        if (this._followState.active)
+        {
+            this._followState.AddOrReplaceShortState(this._followState.rangeTransitState, true, vo);
+            // this._followState.TryRecover();
         }
     }
 
