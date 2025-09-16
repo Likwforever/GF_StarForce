@@ -5,29 +5,32 @@ using UnityGameFramework.Runtime;
 
 public class CameraMgr : GameFrameworkComponent
 {
-    public Transform followTrans;
     private Camera _cameraCom;
-
+    public Transform followTrans;
     private Transform _cameraTrans;
 
+    // 相机状态
     private BaseMainCameraState _curState;
     private BaseMainCameraState _nextState;
-
+    private MainCameraFollowState _followState;
     private List<BaseMainCameraState> _cameraStack;
 
-    private MainCameraFollowState _followState;
+    // 相机震屏
+    private CameraShakeComponent _cameraShakeCom;
 
+    // 相机状态过渡
+    private bool _isDoingTransitionLerp;
     private Vector3 _transitionFromPos;
     private Vector3 _transitionFromForward;
-
-    private CameraParameter _cameraFovParam;
-
-    private bool _isDoingTransitionLerp;
     private float _transitionLerpTimer = 0;
     private float _transitionLerpSpeedRatio = 1;
 
+
+    // 手动拖拽控制
     private float _manualVerticalRatio = 1;
     private float _manualHorizontalRatio = 1;
+
+    private CameraParameter _cameraFovParam;
 
     public Transform CameraTrans
     {
@@ -45,6 +48,7 @@ public class CameraMgr : GameFrameworkComponent
         this._cameraTrans = _cameraCom.transform;
 
         this._cameraStack = new List<BaseMainCameraState>();
+        this._cameraShakeCom = new CameraShakeComponent(this);
 
         this._cameraFovParam = new CameraParameter();
 
@@ -84,6 +88,23 @@ public class CameraMgr : GameFrameworkComponent
         if (Input.GetKeyDown(KeyCode.G))
         {
             this.TryDisableTargetState(this._followState);
+        }
+
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            this.ActCameraShakeEffect(new ActCameraShakeEffect()
+            {
+                shakeDuration = 1,
+                shakeRange = 1,
+                shakeDirX = 1,
+                shakeDirY = 1,
+                shakeDirZ = 1,
+                disturbanceRatio = 0.2f,
+                stepFrame = 1,
+                clearPreviousList = true,
+                fadeIn = 0,
+                fadeOut = 0,
+            });
         }
     }
 
@@ -143,6 +164,9 @@ public class CameraMgr : GameFrameworkComponent
                 this.UpdateCameraPos(targetCamPos, targetCamForward, this._curState.cameraRotation);
             }
         }
+
+        // 更新相机组件
+        this.UpdateCameraComponet();
     }
 
     private void UpdateCameraParam()
@@ -425,4 +449,30 @@ public class CameraMgr : GameFrameworkComponent
 
         return false;
     }
+
+
+    /// <summary>
+    /// 相机震屏效果
+    /// </summary>
+    /// <param name="shakeEffect"></param>
+    public void ActCameraShakeEffect(ActCameraShakeEffect shakeEffect)
+    {
+        if (this._curState == null)
+        {
+            // 当前没有执行的相机，屏蔽震屏
+            return;
+        }
+        this._cameraShakeCom.ActCameraShakeEffect(shakeEffect);
+    }
+
+    public void ClearAllShakeEntry()
+    {
+        this._cameraShakeCom.ClearAllShakeEntry();
+    }
+
+    public void UpdateCameraComponet()
+    {
+        this._cameraShakeCom.UpdateCameraShake();
+    }
+
 }

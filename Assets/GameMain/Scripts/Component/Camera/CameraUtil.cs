@@ -102,4 +102,24 @@ public static class CameraUtil
         }
         return val;
     }
+
+
+    /// <summary>
+    /// 在单位圆内随机一个点
+    /// </summary>
+    /// <returns></returns>
+    public static Vector2 RandomInsideUnitCircle()
+    {
+        // Unity中的API
+        // UnityEngine.Random.insideUnitCircle.normalized;
+
+        // 自己实现的API
+        float angle = UnityEngine.Random.Range(0, 2 * Mathf.PI); // 随机角度
+        float radius = Mathf.Sqrt(UnityEngine.Random.Range(0f, 1f)); // 随机半径
+        float x = radius * Mathf.Cos(angle);
+        float y = radius * Mathf.Sin(angle);
+        Vector2 result = new Vector2(x, y);
+        return result;
+
+    }
 }

@@ -141,6 +141,12 @@ public static class CameraConfig
     public static float FocalTime = 1f; //过度时间
 
     public static float FocalMinDist = 2f; //进入近景模式后的最近距离
+
+
+    // 震屏相关参数
+    public static float MaxShakeStrength = 0.9f; // 震屏最大Strength值
+    public static float MinShakeStrength = 0.1f; // 震屏最小Strength值
+    public static float CameraFollowAvatarAndTargetAngle = 30f; // 战斗相机最终回正角度
 }
 
 public enum CameraStateID
