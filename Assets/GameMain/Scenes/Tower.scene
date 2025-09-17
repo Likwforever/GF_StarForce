@@ -1115,6 +1115,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   followTrans: {fileID: 1442736343}
+  targetTrans: {fileID: 423585577}
 --- !u!4 &1571176140
 Transform:
   m_ObjectHideFlags: 0

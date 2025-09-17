@@ -9,6 +9,8 @@ public class CameraMgr : GameFrameworkComponent
     public Transform followTrans;
     private Transform _cameraTrans;
 
+    public Transform targetTrans;
+
     // 相机状态
     private BaseMainCameraState _curState;
     private BaseMainCameraState _nextState;
@@ -123,6 +125,11 @@ public class CameraMgr : GameFrameworkComponent
                     horizontalAxisVal = this._followState.horizontalAxisVal, // 默认不改变水平轴
                 });
             }
+        }
+
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            this.EnablePathFindingFollowState();
         }
     }
 
@@ -284,6 +291,7 @@ public class CameraMgr : GameFrameworkComponent
         }
     }
 
+    #region 范围转换
     // 进入范围转换
     public void EnterRangeTransit(FollowRangeStateParamVo vo)
     {
@@ -302,7 +310,27 @@ public class CameraMgr : GameFrameworkComponent
             // this._followState.TryRecover();
         }
     }
+    #endregion
 
+    #region 寻路状态
+    // 进入寻路状态
+    public void EnablePathFindingFollowState()
+    {
+        if (this._followState.active)
+        {
+            this._followState.TransitBaseState(CameraFollowStateID.FollowAvatarPathFindingState);
+        }
+    }
+
+    // 退出寻路状态
+    public void ExitPathFindingState()
+    {
+        if (this._followState.active)
+        {
+            this._followState.TryToTransitToOtherBaseState();
+        }
+    }
+    #endregion
 
     /// <summary>
     /// 切换至跟随状态
@@ -512,4 +540,8 @@ public class CameraMgr : GameFrameworkComponent
         this._cameraShakeCom.UpdateCameraShake();
     }
 
+    public Vector3 FindTargetPos()
+    {
+        return this.targetTrans.position;
+    }
 }

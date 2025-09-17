@@ -147,6 +147,11 @@ public static class CameraConfig
     public static float MaxShakeStrength = 0.9f; // 震屏最大Strength值
     public static float MinShakeStrength = 0.1f; // 震屏最小Strength值
     public static float CameraFollowAvatarAndTargetAngle = 30f; // 战斗相机最终回正角度
+
+    // 寻路状态相关参数
+    public static float PathFindingStateTargetVerticalAxisOffset = 0f; // 寻路状态最终垂直轴旋转值偏移
+    public static float PathFindingStateTargetHorizontalAxis = 15f; // 寻路状态最终水平轴旋转值
+    public static float PathFindingStateBeginCondition = 30f; // 寻路状态开启回正条件（垂直轴欧拉角）
 }
 
 public enum CameraStateID
@@ -160,6 +165,7 @@ public enum CameraFollowStateID
     None = 0,
     FollowCloseShotState = 1,
     FollowChangeParamState = 2,
+    FollowAvatarPathFindingState = 3,
 }
 
 

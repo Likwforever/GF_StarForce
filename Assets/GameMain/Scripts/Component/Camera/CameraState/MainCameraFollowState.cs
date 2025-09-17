@@ -160,6 +160,7 @@ public class MainCameraFollowState : BaseMainCameraState
         // base state
         this._stateMap = new Dictionary<CameraFollowStateID, BaseFollowBaseState>();
         this.AddState(new FollowCloseShotState(this));
+        this.AddState(new FollowAvatarPathFindingState(this));
         // short state
         this.rangeTransitState = new FollowRangeTransitState(this);
         this.manualRotateState = new FollowManualControlRotateState(this);
