@@ -112,7 +112,7 @@ public class CameraMgr : GameFrameworkComponent
         if (Input.GetKeyDown(KeyCode.J))
         {
             var target = GameObject.Find("Npc");
-            if (target != null)
+            if (target != null && !this.IsWithinCamera(target.transform.position))
             {
                 Vector3 dir = target.transform.position - this._cameraTrans.position;
                 Quaternion quaternion = Quaternion.LookRotation(dir);
@@ -131,6 +131,7 @@ public class CameraMgr : GameFrameworkComponent
         {
             this.EnablePathFindingFollowState();
         }
+
     }
 
     void LateUpdate()
@@ -543,5 +544,38 @@ public class CameraMgr : GameFrameworkComponent
     public Vector3 FindTargetPos()
     {
         return this.targetTrans.position;
+    }
+
+    /// <summary>
+    /// 判断目标物体是否在镜头内
+    /// </summary>
+    /// <param name="targetPos"></param>
+    /// <param name="degree"></param>
+    /// <returns></returns>
+    public bool IsWithinCamera(Vector3 targetPos, float degree = 60)
+    {
+        Vector2 cameraForward = new Vector2(this._followState.cameraForward.x, this._followState.cameraForward.z);
+        cameraForward.Normalize();
+
+        Vector2 dir = new Vector2(targetPos.x - this._followState.followPos.x, targetPos.z - this._followState.followPos.z);
+        dir.Normalize();
+
+        float dot = Vector2.Dot(cameraForward, dir);
+        float deg = Mathf.Acos(dot) * (180 / Mathf.PI); // 相机方向与目标方向的夹角
+
+        // 若夹角大于degree，则认为目标物体在镜头外
+        if (deg >= degree)
+        {
+            return false;
+        }
+
+
+        Vector3 pointer = this._cameraCom.WorldToViewportPoint(targetPos);
+
+        if (pointer.x > 0 && pointer.x < 1 && pointer.y > 0 && pointer.y < 1 && pointer.z > 0)
+        {
+            return true;
+        }
+        return false;
     }
 }
