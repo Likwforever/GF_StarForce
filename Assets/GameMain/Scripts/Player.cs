@@ -1,3 +1,4 @@
+using System;
 using StarForce;
 using UnityEngine;
 
@@ -5,7 +6,28 @@ public class Player : MonoBehaviour
 {
     public float moveSpeed = 5f;
 
+
     void Update()
+    {
+        // 使用Unity标准输入轴
+        float h = Input.GetAxisRaw("Horizontal");
+        float v = Input.GetAxisRaw("Vertical");
+
+        this.Move(h, v);
+    }
+
+    public void SetJoystickMove(float Horizontal, float Vertical)
+    {
+        if (Horizontal == 0 && Vertical == 0) return;
+        if (Horizontal > 0) Horizontal = 1;
+        if (Vertical > 0) Vertical = 1;
+        if (Horizontal < 0) Horizontal = -1;
+        if (Vertical < 0) Vertical = -1;
+
+        this.Move(Horizontal, Vertical);
+    }
+
+    private void Move(float Horizontal, float Vertical)
     {
         // 获取主相机
         Transform cam = GameEntry.Camera.CameraTrans;
@@ -20,11 +42,7 @@ public class Player : MonoBehaviour
         camRight.y = 0;
         camRight.Normalize();
 
-        // 使用Unity标准输入轴
-        float h = Input.GetAxisRaw("Horizontal");
-        float v = Input.GetAxisRaw("Vertical");
-
-        Vector3 moveDir = camForward * v + camRight * h;
+        Vector3 moveDir = camForward * Vertical + camRight * Horizontal;
         if (moveDir.sqrMagnitude > 0.0001f)
         {
             moveDir.Normalize();

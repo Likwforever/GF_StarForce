@@ -129,8 +129,8 @@ public static class CameraConfig
 
     public static float TrackedOffsetPresetY = 0.3f; // 跟踪偏移预设Y
 
-    public static float DampingXY = 0.1f; // 阻尼
-    public static float DampingZ = 0.1f; // 阻尼
+    public static float DampingXY = 0.5f; // 阻尼  类似Canimation的那个框框，阻尼越大，那个框越大，物体移动到框的时候，相机开始跟随
+    public static float DampingZ = 0.5f; // 阻尼
 
     public static float EnterCloseShotDist = 3f; // 进入近景模式距离
 

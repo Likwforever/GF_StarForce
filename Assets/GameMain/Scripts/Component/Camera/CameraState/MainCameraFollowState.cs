@@ -360,16 +360,17 @@ public class MainCameraFollowState : BaseMainCameraState
         //     //##################暂时性提交，阻尼包围限制##################
 
         // 让相机平滑的移动到目标位置
-        cameraScreenOffset.y = CameraUtil.Damp(cameraScreenOffset.y, this._dampingXY, Time.deltaTime);
-        cameraScreenOffset.x = CameraUtil.Damp(cameraScreenOffset.x, this._dampingXY, Time.deltaTime);
-        cameraScreenOffset.z = CameraUtil.Damp(cameraScreenOffset.z, this._dampingXY, Time.deltaTime);
+
+        cameraScreenOffset.y = Mathf.Abs(cameraScreenOffset.y) < 0.01f ? cameraScreenOffset.y : CameraUtil.Damp(cameraScreenOffset.y, this._dampingXY, Time.deltaTime);
+        cameraScreenOffset.x = Mathf.Abs(cameraScreenOffset.x) < 0.01f ? cameraScreenOffset.x : CameraUtil.Damp(cameraScreenOffset.x, this._dampingXY, Time.deltaTime);
+        cameraScreenOffset.z = Mathf.Abs(cameraScreenOffset.z) < 0.01f ? cameraScreenOffset.z : CameraUtil.Damp(cameraScreenOffset.z, this._dampingXY, Time.deltaTime);
 
         // 计算距离修正值，用于调整相机与目标的距离
         float cameraZOffset =
                 this.GetScreenZOffset(this._followPointPos, this._lookAtPointPos, this._lastFrameCameraPosition, this.cameraForward) -
                 this._correctedData.correctedDist;
         // 对距离修正值也进行缓动
-        cameraZOffset = CameraUtil.Damp(cameraZOffset, this._dampingZ, Time.deltaTime);
+        cameraZOffset = Mathf.Abs(cameraZOffset) < 0.01f ? cameraZOffset : CameraUtil.Damp(cameraZOffset, this._dampingZ, Time.deltaTime);
 
         // 仅在没发生碰撞的时候进行阻尼优化
         if (this._hitDistance == 0)

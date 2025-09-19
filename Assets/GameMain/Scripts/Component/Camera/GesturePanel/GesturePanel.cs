@@ -1,6 +1,9 @@
+using System;
+using System.Collections;
 using StarForce;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UIElements;
 
 
 public class TouchInfo
@@ -38,11 +41,30 @@ public class CameraGestureInfo
 public class GesturePanel : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
 
+    #region 手势
     private GestureInfo _gestureInfo;
     private CameraGestureInfo _cameraGestureInfo;
+    #endregion
+
+    #region 摇杆
+    public Player player;
+    private TouchInfo _touchInfo;
+    public ItemJoystick itemJoystick;
+    private Vector2 _joystickTouchSize;
+
+    // 添加摇杆持续检测相关变量
+    private bool _isJoystickActive = false;
+    private Vector2 _lastJoystickPosition;
+
+    private float _nextMoveCd = 0;
+    private const float DragThreshold = 30;
+    #endregion
 
     void Start()
     {
+        this.itemJoystick.SetActive(false);
+        this._touchInfo = new TouchInfo() { touchID = 0, touchX = 0, touchY = 0 };
+        this._joystickTouchSize = new Vector2(this.itemJoystick.touchArea.rect.width, this.itemJoystick.touchArea.rect.height);
 
         this._gestureInfo = new GestureInfo()
         {
@@ -82,6 +104,12 @@ public class GesturePanel : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
     void Update()
     {
+        if (this._isJoystickActive)
+        {
+            // 持续发送摇杆输入
+            this.OnJoystickTouchMove(_lastJoystickPosition.x, _lastJoystickPosition.y, this._touchInfo.touchID);
+        }
+
         this.UpdateCamera();
     }
 
@@ -166,20 +194,145 @@ public class GesturePanel : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        this.OnGestureBeginDrag(eventData.position.x, eventData.position.y, eventData.pointerId);
+        if (this.IsWithinJoystickTouchRange(eventData.position.x, eventData.position.y))
+        {
+            this.OnJoystickTouchBegin(eventData.position.x, eventData.position.y, eventData.pointerId);
+            // 开始持续检测
+            this._isJoystickActive = true;
+            this._lastJoystickPosition = new Vector2(eventData.position.x, eventData.position.y);
+        }
+        else
+        {
+            this.OnGestureBeginDrag(eventData.position.x, eventData.position.y, eventData.pointerId);
+        }
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        this.OnGestureDrag(eventData.position.x, eventData.position.y, eventData.pointerId);
+        if (this._touchInfo.touchID == eventData.pointerId)
+        {
+            // this.OnJoystickTouchMove(eventData.position.x, eventData.position.y, eventData.pointerId);
+
+            // 更新摇杆位置
+            this._lastJoystickPosition = new Vector2(eventData.position.x, eventData.position.y);
+        }
+        else
+        {
+            this.OnGestureDrag(eventData.position.x, eventData.position.y, eventData.pointerId);
+        }
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        this.OnGestureEndDrag(eventData.position.x, eventData.position.y, eventData.pointerId);
+        if (this._touchInfo.touchID == eventData.pointerId)
+        {
+            this.OnJoystickTouchEnd(eventData.position.x, eventData.position.y, eventData.pointerId);
+
+            // 停止持续检测
+            this._isJoystickActive = false;
+        }
+        else
+        {
+            this.OnGestureEndDrag(eventData.position.x, eventData.position.y, eventData.pointerId);
+        }
+    }
+
+    private void OnJoystickTouchBegin(float x, float y, int touchID)
+    {
+        Vector2 pointer = new Vector2(x, y);
+
+        if (this._touchInfo.touchID == 0)
+        {
+            this._touchInfo.touchID = touchID;
+            this._touchInfo.touchX = pointer.x;
+            this._touchInfo.touchY = pointer.y;
+
+            this.itemJoystick.SetActive(true);
+            this.itemJoystick.SetPosition(this._touchInfo.touchX, this._touchInfo.touchY);
+        }
+    }
+
+    private void OnJoystickTouchMove(float x, float y, int touchID)
+    {
+        Vector2 pointer = new Vector2(x, y);
+
+        float localPosX = pointer.x;
+        float localPosY = pointer.y;
+        if (this.itemJoystick.state == JoystickState.Idle)
+        {
+            float dx = localPosX - this._touchInfo.touchX;
+            float dy = localPosY - this._touchInfo.touchY;
+            float len = Mathf.Sqrt(dx * dx + dy * dy);
+            //if (len >= DragThreshold)
+            //{
+            this.itemJoystick.state = JoystickState.Drag;
+            // }
+
+        }
+        else
+        {
+            float dx = localPosX - this.itemJoystick.transform.position.x;
+            float dy = localPosY - this.itemJoystick.transform.position.y;
+            float len = Mathf.Sqrt(dx * dx + dy * dy);
+            if (len > 0.001f)
+            {
+                this.itemJoystick.dir.x = dx / len;
+                this.itemJoystick.dir.y = dy / len;
+            }
+            else
+            {
+                this.itemJoystick.dir.x = 0;
+                this.itemJoystick.dir.y = 0;
+            }
+            this.itemJoystick.Refresh();
+            this.TrySetJoystickMove(this.itemJoystick.dir.x, this.itemJoystick.dir.y, false);
+        }
+    }
+
+    private void OnJoystickTouchEnd(float x, float y, int touchID)
+    {
+        this._touchInfo.touchID = 0;
+        if (this.itemJoystick.state == JoystickState.Drag)
+        {
+            this.itemJoystick.state = JoystickState.Idle;
+            this.TrySetJoystickMove(0, 0, true);
+        }
+        this.itemJoystick.Refresh();
+        this.itemJoystick.SetActive(false);
+    }
+
+    private void TrySetJoystickMove(float x, float y, bool isForce)
+    {
+        player.SetJoystickMove(x, y);
+        // if (this._nextMoveCd < Time.time || isForce)
+        // {
+        //     this._nextMoveCd = Time.time + 0.01f;
+        //     if (player)
+        //     {
+        //     }
+        // }
     }
 
 
+    public bool IsWithinJoystickTouchRange(float x, float y)
+    {
+        Vector2 pointer = new Vector2(x, y);
+        float touchPosX = pointer.x;
+        float touchPosY = pointer.y;
+
+        Vector2 graphPos = this.itemJoystick.touchArea.position;
+        float minX = graphPos.x - this._joystickTouchSize.x * 0.5f;
+        float maxX = graphPos.x + this._joystickTouchSize.x * 0.5f;
+        float minY = graphPos.y - this._joystickTouchSize.y * 0.5f;
+        float maxY = graphPos.y + this._joystickTouchSize.y * 0.5f;
+        if (touchPosX >= minX && touchPosX <= maxX && touchPosY >= minY && touchPosY <= maxY)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    #region 手势    
     private void OnGestureBeginDrag(float x, float y, int touchID)
     {
         bool isDoubleTouch = true;
@@ -314,4 +467,5 @@ public class GesturePanel : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
             }
         }
     }
+    #endregion
 }
